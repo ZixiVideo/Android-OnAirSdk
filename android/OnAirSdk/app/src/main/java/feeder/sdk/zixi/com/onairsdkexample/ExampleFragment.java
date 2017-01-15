@@ -111,9 +111,12 @@ public class ExampleFragment extends Fragment implements IZixiLogEvents, IZixiSd
         mToggleConnection = (Button)ret.findViewById(R.id.example_toggle_connection);
         mToggleCamera = (Button)ret.findViewById(R.id.example_toggle_camera);
         mToggleFlash = (Button)ret.findViewById(R.id.example_toggle_flash);
+        mOnAirFragment.setBondingMode(ZixiBonding.BONDING_ON);
+        mOnAirFragment.setBondingMode(ZixiBonding.BONDING_OFF);
         if (mOnAirFragment.setEncoderParameters(VIDEO_ENCODER_PARAMETERS,null) != ZixiError.ZIXI_ERROR_OK) {
 
         }
+        mOnAirFragment.setMaxLoggingLevel(0);
         mOnAirFragment.setLoggingCallback(this);
 
         mOnAirFragment.connectToCamera(CameraType.CT_BACK);
