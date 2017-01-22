@@ -1,5 +1,6 @@
 package onairsdktester.zixi.com.zixionairsdktester;
 
+import android.os.Build;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -15,6 +16,7 @@ import com.feeder.zixi.zixisdkcore.ZixiErrors;
 import com.zixi.onairsdk.ZixiConnectionStatistics;
 import com.zixi.onairsdk.ZixiOnAirSdk;
 import com.zixi.onairsdk.ZixiRtmpStatistics;
+import com.zixi.onairsdk.camera.ZixiCameraPreview;
 import com.zixi.onairsdk.events.ZixiLogEvents;
 import com.zixi.onairsdk.events.ZixiOnAirEncodedFramesEvents;
 import com.zixi.onairsdk.events.ZixiOnAirStatusEvents;
@@ -25,6 +27,10 @@ import com.zixi.onairsdk.settings.ZixiSettings;
 
 public class MainActivity extends AppCompatActivity {
     public static final String TAG = "ZixiOnAirSDKTester";
+    private static final String BROADCASTER_CHANNEL_NAME = "iphone";
+    private static final String BROADCASTER_HOST_NAME = "10.7.0.206";
+    private static final String RTMP_STREAM_NAME = "";
+    private static final String RTMP_URL = "";
 
     // Ui Properties
     private SurfaceView mCameraSurface;
@@ -108,6 +114,13 @@ public class MainActivity extends AppCompatActivity {
         public void zixiOnAirCaptureInfo(int width, int height, float fps) {
             Log.e(TAG,"zixiOnAirCaptureInfo [" + width + "x" + height + "]@" +String.format("%.02f",fps));
         }
+
+
+        // Called whenever video encoder bitrate changes (adaptive = true)
+        @Override
+        public void zixiOnAirVideoEncoderBitrateSet(int set_bitrate, int requested_bitrate) {
+            Log.e(TAG,String.format("zixiOnAirVideoEncoderBitrateSet: %d Quality: %.02f",set_bitrate, ((float)set_bitrate/requested_bitrate) * 100));
+        }
     };
 
     // Encoded frames callbacks
@@ -138,6 +151,9 @@ public class MainActivity extends AppCompatActivity {
                 ZixiOnAirSdk.getInstance().setLogCallback(mLogCallback);
                 ZixiOnAirSdk.getInstance().setStatusEventsHandler(mOnAirCallbacks);
                 ZixiOnAirSdk.getInstance().setEncodedFramesEventsHandler(mEncodedFramesCallbacks);
+
+
+                handleDeviceSpecificInitialization();
                 mZixiReady = true;
                 if (mUiCreated) {
                     ZixiOnAirSdk.getInstance().setCameraView(mCameraSurface.getHolder());
@@ -160,6 +176,49 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     });
+
+    // Call after ZixiOnAirSdk.initInstance returned ok
+    private void handleDeviceSpecificInitialization() {
+        int [][] cameraMaxResolution  =   getDeviceSpecificCameraConstraints();
+        int [] cameraOrientation    =   getDeviceSpecificCameraOrientations();
+        int    encoderOrientation   =   getDeviceSpecificEncoderOrientations();
+
+        ZixiCameraPreview.setDeviceSpecificData(cameraMaxResolution,cameraOrientation,encoderOrientation);
+    }
+
+    // Returns amount of degrees to rotate the input of the video encoder
+    // if (Ugoos...) than rotate 180, else dont
+    private int getDeviceSpecificEncoderOrientations() {
+        if ( Build.MODEL.compareToIgnoreCase("UGOOS-UT3Plus") == 0) {
+            return  180;
+        }
+        return 0;
+    }
+
+    // Rotate raw camera sensor array
+    // if nexus5 we want to rotate the back camera in 180 degrees
+    //      return[0] -> back camera (rotate 180)
+    //      return[1] -> front camrea (dont rotate)
+    // else dont rotate anything
+    private int[] getDeviceSpecificCameraOrientations() {
+        if ( Build.MODEL.compareToIgnoreCase("Nexus 5X") == 0) {
+            return new int[]{180,0};
+        }
+        return null;
+    }
+
+    // Do not ask the camera preview to be greater than the resolution
+    // return[0]x return[1]
+    // in this case
+    // if (Ugoos...)
+    //  dont use any source resolution greater than 1280x720
+
+    private int[][] getDeviceSpecificCameraConstraints() {
+        if ( Build.MODEL.compareToIgnoreCase("UGOOS-UT3Plus") == 0) {
+            return new int[][] {{1280, 720}};
+        }
+        return null;
+    }
 
 
     private void setStatus(final String status) {
@@ -260,6 +319,9 @@ public class MainActivity extends AppCompatActivity {
                 Log.e(TAG,"set zoom " + zoomValue);
                 if (mZixiReady) {
                     ZixiOnAirSdk.getInstance().cameraPreview().setZoom(zoomValue);
+
+                    // to clear manual focus
+                    // ZixiOnAirSdk.getInstance().cameraPreview().setAutoFocus();
                 }
             }
 
