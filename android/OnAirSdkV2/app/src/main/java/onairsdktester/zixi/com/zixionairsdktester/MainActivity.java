@@ -13,6 +13,7 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.feeder.zixi.zixisdkcore.ZixiErrors;
+import com.feeder.zixi.zixisdkcore.ZixiFileUploadSettings;
 import com.zixi.onairsdk.ZixiConnectionStatistics;
 import com.zixi.onairsdk.ZixiOnAirSdk;
 import com.zixi.onairsdk.ZixiRtmpStatistics;
@@ -20,6 +21,7 @@ import com.zixi.onairsdk.camera.ZixiCameraPreview;
 import com.zixi.onairsdk.events.ZixiLogEvents;
 import com.zixi.onairsdk.events.ZixiOnAirEncodedFramesEvents;
 import com.zixi.onairsdk.events.ZixiOnAirStatusEvents;
+import com.zixi.onairsdk.settings.FileUploadSettings;
 import com.zixi.onairsdk.settings.ProtocolSettings;
 import com.zixi.onairsdk.settings.RtmpSettings;
 import com.zixi.onairsdk.settings.VideoSettings;
@@ -27,8 +29,8 @@ import com.zixi.onairsdk.settings.ZixiSettings;
 
 public class MainActivity extends AppCompatActivity {
     public static final String TAG = "ZixiOnAirSDKTester";
-    private static final String BROADCASTER_CHANNEL_NAME = "iphone";
-    private static final String BROADCASTER_HOST_NAME = "10.7.0.206";
+    private static final String BROADCASTER_CHANNEL_NAME = "";
+    private static final String BROADCASTER_HOST_NAME = "";
     private static final String RTMP_STREAM_NAME = "";
     private static final String RTMP_URL = "";
 
@@ -121,6 +123,43 @@ public class MainActivity extends AppCompatActivity {
         public void zixiOnAirVideoEncoderBitrateSet(int set_bitrate, int requested_bitrate) {
             Log.e(TAG,String.format("zixiOnAirVideoEncoderBitrateSet: %d Quality: %.02f",set_bitrate, ((float)set_bitrate/requested_bitrate) * 100));
         }
+
+        // New events
+
+        /**
+         * Store and forward file has finished write on disk, and now continues to be sent over net
+         * @param file_size     - final file size on the device
+         */
+        @Override
+        public void zixiOnAirFileFinalized( long file_size) {
+
+        }
+
+        /**
+         * File upload has finished (store and forward/file transfer)
+         * @param transmitted - in bytes, sent in net
+         */
+        @Override
+        public void zixiFileTransferComplete( long transmitted) {
+
+        }
+
+        /**
+         * connection has been restored
+         */
+        @Override
+        public void zixiOnAirReconnected() {
+
+        }
+
+        /**
+         * lost connection to the server
+         */
+        @Override
+        public void zixiOnAirConnectivityLost() {
+
+        }
+        // New events end
     };
 
     // Encoded frames callbacks
@@ -157,19 +196,6 @@ public class MainActivity extends AppCompatActivity {
                 mZixiReady = true;
                 if (mUiCreated) {
                     ZixiOnAirSdk.getInstance().setCameraView(mCameraSurface.getHolder());
-                }
-                if (mUiGotMeasures) {
-                    int r = getResources().getConfiguration().orientation;
-                    if (r == 0) {
-                        r = 2;
-                    } else if (r == 1) {
-                        r = 3;
-                    } else if (r == 2) {
-                        r = 0;
-                    } else {
-                        r = 1;
-                    }
-                    ZixiOnAirSdk.getInstance().cameraViewChanged(mSurfaceW,mSurfaceH,r);
                 }
             } else {
                 setStatus("Failed to init sdk, missing permissions");
@@ -248,7 +274,7 @@ public class MainActivity extends AppCompatActivity {
             mSurfaceW = width;
             if (mZixiReady) {
                 Log.e(TAG,"surfaceChanged ["  + width + "x" + height + "] " + getResources().getConfiguration().orientation);
-                ZixiOnAirSdk.getInstance().cameraViewChanged(width,height,getResources().getConfiguration().orientation);
+                // ZixiOnAirSdk.getInstance().cameraViewChanged(width,height,getResources().getConfiguration().orientation);
             } else {
                 mUiGotMeasures = true;
             }
@@ -276,9 +302,9 @@ public class MainActivity extends AppCompatActivity {
         if (mZixiReady && ZixiOnAirSdk.getInstance().connected()) {
             ZixiOnAirSdk.getInstance().stopStreaming();
         }
-        if (mZixiReady) {
+        /*if (mZixiReady) {
             ZixiOnAirSdk.getInstance().onPause();
-        }
+        }*/
     }
 
     @Override
@@ -301,7 +327,7 @@ public class MainActivity extends AppCompatActivity {
                         float x = event.getX();
                         float y = event.getY();
                         if (mZixiReady)
-                            ZixiOnAirSdk.getInstance().cameraPreview().setManualFocusPoint(x,y);
+                            ZixiOnAirSdk.getInstance().manualFocus(x,y);
 
                         Log.i(TAG, "Touch [" + x + "x" + y + "]");
                     }
@@ -318,10 +344,10 @@ public class MainActivity extends AppCompatActivity {
                 float zoomValue =1.0f+ ((float)progress/20);
                 Log.e(TAG,"set zoom " + zoomValue);
                 if (mZixiReady) {
-                    ZixiOnAirSdk.getInstance().cameraPreview().setZoom(zoomValue);
+                    ZixiOnAirSdk.getInstance().zoom(zoomValue);
 
                     // to clear manual focus
-                    // ZixiOnAirSdk.getInstance().cameraPreview().setAutoFocus();
+                    // ZixiOnAirSdk.getInstance().autoFocus();
                 }
             }
 
@@ -338,9 +364,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void toggleCameraClicked(View view) {
-        if (ZixiOnAirSdk.getInstance() != null && ZixiOnAirSdk.getInstance().cameraPreview() != null) {
+        if (ZixiOnAirSdk.getInstance() != null && ZixiOnAirSdk.getInstance().haveMoreThanOneCamera()) {
             Log.e(TAG,"toggleCamera");
-            ZixiOnAirSdk.getInstance().cameraPreview().switchCamera();
+            ZixiOnAirSdk.getInstance().switchCamera();
         }
     }
 
@@ -376,7 +402,26 @@ public class MainActivity extends AppCompatActivity {
                     settings.video.frameSizePreset = VideoSettings.ZixiFrameSizePreset640x360;
                 }
 
-                ZixiOnAirSdk.getInstance().startStreamingWithSettings(settings,this);
+                // File upload - for file transfer application must have read permissions of the file
+                //               for store and forward the application must also have write permissions
+                //                  to save the data.
+                // settings.server.fileSettings = new FileUploadSettings();
+                // settings.server.fileSettings.storeAndForward = true/false; true  -> store and forward
+                //                                                            false -> file transfer
+                // settings.server.fileSettings.localFileName = <FULL_FILE_PATH>;
+                // settings.server.fileSettings.overwrite = true/false; true -> if bx have a file named like localFileName it will be overwritten
+                //                                                      false -> if bx have a file named like localFileName connect will fail
+                // settings.server.fileSettings.remoteLocation = <PATH> ; where to store the uploaded file (path)
+                ZixiOnAirSdk.getInstance().startStreamingWithSettings(settings);
+
+                // In case of store and forward, when wishing to cause the sdk to start cleaning up the
+                // file and stopping the recording call
+                // ZixiOnAirSdk.getInstance().finalizeFile();
+                // when the ZixiOnAirStatusEvents.zixiOnAirFileFinalized event will be called,
+                // its after all the sources have been stopped, encoders wrapped, and the file has
+                // been stored. When ZixiOnAirStatusEvents.zixiFileTransferComplete event is fired.
+                // All data has also been sent.
+
             }
         }
         Log.e("Activity","toggleOnClick - done");
