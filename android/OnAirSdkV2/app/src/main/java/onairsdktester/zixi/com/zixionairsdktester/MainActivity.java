@@ -27,6 +27,7 @@ import com.zixi.onairsdk.ZixiOnAirSdk;
 import com.zixi.onairsdk.events.ZixiLogEvents;
 import com.zixi.onairsdk.events.ZixiOnAirEncodedFramesEvents;
 import com.zixi.onairsdk.events.ZixiOnAirStatusEvents;
+import com.zixi.onairsdk.preview.ZixiOnAirPreview;
 import com.zixi.onairsdk.settings.FileUploadSettings;
 import com.zixi.onairsdk.settings.ProtocolSettings;
 import com.zixi.onairsdk.settings.RtmpSettings;
@@ -45,7 +46,19 @@ public class MainActivity extends AppCompatActivity {
     private TextView mStatusText;
     private SeekBar mSetZoom;
 
+    private boolean mCropPreviewMode = false; // Default is fit
     private SingleTapConfirm mTapDetector = new SingleTapConfirm();
+
+    public void toggleCropFit(View view) {
+        if (mSdk != null) {
+            mCropPreviewMode = !mCropPreviewMode;
+            if (mCropPreviewMode) {
+                mSdk.setPreviewMode(ZixiOnAirPreview.PREVIEW_MODE_CROP);
+            } else {
+                mSdk.setPreviewMode(ZixiOnAirPreview.PREVIEW_MODE_FIT);
+            }
+        }
+    }
 
     private class SingleTapConfirm extends GestureDetector.SimpleOnGestureListener {
 
