@@ -358,6 +358,7 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 ZixiSettings settings = new ZixiSettings();
                 settings.server.rtmpFwd = null;
+                settings.server.password = "";
                 settings.server.channelName = BROADCASTER_CHANNEL_NAME;
                 settings.server.hostName = BROADCASTER_HOST_NAME;
                 settings.protocol.protocolId = ProtocolSettings.PROTCOL_ZIXI;
