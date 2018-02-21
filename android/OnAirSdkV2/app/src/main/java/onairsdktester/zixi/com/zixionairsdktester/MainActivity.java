@@ -36,8 +36,8 @@ import com.zixi.onairsdk.settings.ZixiSettings;
 
 public class MainActivity extends AppCompatActivity {
     public static final String TAG = "ZixiOnAirSDKTester";
-    private static final String BROADCASTER_CHANNEL_NAME = "";
-    private static final String BROADCASTER_HOST_NAME = "";
+    private static final String BROADCASTER_CHANNEL_NAME = "android";
+    private static final String BROADCASTER_HOST_NAME = "10.7.0.44";
     private static final String RTMP_STREAM_NAME = "";
     private static final String RTMP_URL = "";
 
@@ -291,6 +291,12 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         mSdk = new ZixiOnAirSdk(this);
+        mSdk.setLogCallback(new ZixiLogEvents() {
+            @Override
+            public void logMessage(int level, String who, String what) {
+                Log.println(level,"ZixiOnAirSdk", who + "::" + what);
+            }
+        });
         mSdk.setStatusEventsHandler(mOnAirCallbacks);
         mSdk.initialize();
         mCameraSurface = (SurfaceView)findViewById(R.id.camera_surface);
@@ -357,7 +363,7 @@ public class MainActivity extends AppCompatActivity {
                 mSdk.stopStreaming();
             } else {
                 ZixiSettings settings = new ZixiSettings();
-                settings.server.rtmpFwd = null;
+               /* settings.server.rtmpFwd = null;
                 settings.server.password = "";
                 settings.server.channelName = BROADCASTER_CHANNEL_NAME;
                 settings.server.hostName = BROADCASTER_HOST_NAME;
@@ -367,8 +373,14 @@ public class MainActivity extends AppCompatActivity {
                 settings.server.rtmpFwd.streamName = RTMP_STREAM_NAME;
                 settings.server.rtmpFwd.URL = RTMP_URL;
                 settings.server.rtmpFwd.username = "";
-                settings.server.rtmpFwd.password = "";
+                settings.server.rtmpFwd.password = "";*/
 
+
+               /*
+                    default - false. Encoder will use preset to create a width X height video
+                     true.          Encoder will use preset to create a height X width video
+                */
+               // settings.advanced.verticalOrientation = true;
 
                 /* RTMP CONNECTION
                 settings.protocol.protocolId = ProtocolSettings.PROTCOL_RTMP;
@@ -393,6 +405,9 @@ public class MainActivity extends AppCompatActivity {
                 // settings.server.fileSettings.overwrite = true/false; true -> if bx have a file named like localFileName it will be overwritten
                 //                                                      false -> if bx have a file named like localFileName connect will fail
                 // settings.server.fileSettings.remoteLocation = <PATH> ; where to store the uploaded file (path)
+
+
+
                 mSdk.startStreamingWithSettings(settings);
 
                 // In case of store and forward, when wishing to cause the sdk to start cleaning up the
