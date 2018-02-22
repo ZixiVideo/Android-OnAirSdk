@@ -36,8 +36,8 @@ import com.zixi.onairsdk.settings.ZixiSettings;
 
 public class MainActivity extends AppCompatActivity {
     public static final String TAG = "ZixiOnAirSDKTester";
-    private static final String BROADCASTER_CHANNEL_NAME = "android";
-    private static final String BROADCASTER_HOST_NAME = "10.7.0.44";
+    private static final String BROADCASTER_CHANNEL_NAME = "";
+    private static final String BROADCASTER_HOST_NAME = "";
     private static final String RTMP_STREAM_NAME = "";
     private static final String RTMP_URL = "";
 
@@ -298,6 +298,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         mSdk.setStatusEventsHandler(mOnAirCallbacks);
+
         mSdk.initialize();
         mCameraSurface = (SurfaceView)findViewById(R.id.camera_surface);
         mCameraSurface.getHolder().addCallback(mSurfaceCallbacks);
@@ -363,13 +364,13 @@ public class MainActivity extends AppCompatActivity {
                 mSdk.stopStreaming();
             } else {
                 ZixiSettings settings = new ZixiSettings();
-               /* settings.server.rtmpFwd = null;
+                settings.server.rtmpFwd = null;
                 settings.server.password = "";
                 settings.server.channelName = BROADCASTER_CHANNEL_NAME;
                 settings.server.hostName = BROADCASTER_HOST_NAME;
                 settings.protocol.protocolId = ProtocolSettings.PROTCOL_ZIXI;
                 settings.server.bonding = false;
-                settings.server.rtmpFwd = new RtmpSettings();
+            /*    settings.server.rtmpFwd = new RtmpSettings();
                 settings.server.rtmpFwd.streamName = RTMP_STREAM_NAME;
                 settings.server.rtmpFwd.URL = RTMP_URL;
                 settings.server.rtmpFwd.username = "";
