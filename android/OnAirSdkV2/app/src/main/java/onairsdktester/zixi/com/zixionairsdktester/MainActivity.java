@@ -24,6 +24,7 @@ import com.zixi.onairsdk.ZixiConnectionStatistics;
 import com.zixi.onairsdk.ZixiOnAirSdk;
 //import com.zixi.onairsdk.ZixiRtmpStatistics;
 //import com.zixi.onairsdk.camera.ZixiCameraPreview;
+import com.zixi.onairsdk.camera.ZixiCameraPreset;
 import com.zixi.onairsdk.events.ZixiLogEvents;
 import com.zixi.onairsdk.events.ZixiOnAirEncodedFramesEvents;
 import com.zixi.onairsdk.events.ZixiOnAirStatusEvents;
@@ -36,8 +37,8 @@ import com.zixi.onairsdk.settings.ZixiSettings;
 
 public class MainActivity extends AppCompatActivity {
     public static final String TAG = "ZixiOnAirSDKTester";
-    private static final String BROADCASTER_CHANNEL_NAME = "";
-    private static final String BROADCASTER_HOST_NAME = "";
+    private static final String BROADCASTER_CHANNEL_NAME = "android";
+    private static final String BROADCASTER_HOST_NAME = "10.7.0.44";
     private static final String RTMP_STREAM_NAME = "";
     private static final String RTMP_URL = "";
 
@@ -84,6 +85,9 @@ public class MainActivity extends AppCompatActivity {
     private long mEncodedAudio = 0;  // Encoded audio frames
     private long mTotalAudio = 0;    // total video bitstream size in bytes
     private long mTotalVideo = 0;   // total audio bitstream size in bytes
+
+
+    private int  mCameraRotation = ZixiOnAirPreview.ROTATE_0_DEGREES;
 
     // Ui view measures
     private int mSurfaceW;
@@ -298,7 +302,12 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         mSdk.setStatusEventsHandler(mOnAirCallbacks);
-
+        findViewById(R.id.btn_rotate_cam).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                toggleCameraPreviewRotation();
+            }
+        });
         mSdk.initialize();
         mCameraSurface = (SurfaceView)findViewById(R.id.camera_surface);
         mCameraSurface.getHolder().addCallback(mSurfaceCallbacks);
@@ -357,9 +366,32 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+
+    // Called from "ROTATE" button
+    public void toggleCameraPreviewRotation() {
+
+        switch (mCameraRotation) {
+            case ZixiOnAirPreview.ROTATE_0_DEGREES:
+                mCameraRotation = ZixiOnAirPreview.ROTATE_90_DEGREES;
+                break;
+            case ZixiOnAirPreview.ROTATE_90_DEGREES:
+                mCameraRotation = ZixiOnAirPreview.ROTATE_180_DEGREES;
+                break;
+            case ZixiOnAirPreview.ROTATE_180_DEGREES:
+                mCameraRotation = ZixiOnAirPreview.ROTATE_270_DEGREES;
+                break;
+            case ZixiOnAirPreview.ROTATE_270_DEGREES:
+                mCameraRotation = ZixiOnAirPreview.ROTATE_0_DEGREES;
+                break;
+        }
+
+        mSdk.setPreviewCameraRotation(mCameraRotation);
+    }
+
     // Called from "CONNECT" button
     public void toggleOnClick(View view) {
         if (mSdk.canConnect()) {
+
             if (mSdk.connected()){
                 mSdk.stopStreaming();
             } else {

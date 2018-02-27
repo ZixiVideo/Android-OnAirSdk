@@ -83,6 +83,12 @@
                 android:layout_height="wrap_content"
                 android:text="Fit/Crop"
                 android:onClick="toggleCropFit"/>
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="ROTATE"
+                android:id="@+id/btn_rotate_cam"
+                />
         </LinearLayout>
 
 
