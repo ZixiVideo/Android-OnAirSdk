@@ -37,8 +37,8 @@ import com.zixi.onairsdk.settings.ZixiSettings;
 
 public class MainActivity extends AppCompatActivity {
     public static final String TAG = "ZixiOnAirSDKTester";
-    private static final String BROADCASTER_CHANNEL_NAME = "android";
-    private static final String BROADCASTER_HOST_NAME = "10.7.0.44";
+    private static final String BROADCASTER_CHANNEL_NAME = "";
+    private static final String BROADCASTER_HOST_NAME = "";
     private static final String RTMP_STREAM_NAME = "";
     private static final String RTMP_URL = "";
 
@@ -396,6 +396,13 @@ public class MainActivity extends AppCompatActivity {
                 mSdk.stopStreaming();
             } else {
                 ZixiSettings settings = new ZixiSettings();
+               /*
+                    default -   false.  Encoder will use preset to create a width X height video
+                                true.   Encoder will use preset to create a height X width video
+                */
+                // settings.advanced.verticalOrientation = true;
+
+
                 settings.server.rtmpFwd = null;
                 settings.server.password = "";
                 settings.server.channelName = BROADCASTER_CHANNEL_NAME;
@@ -409,19 +416,16 @@ public class MainActivity extends AppCompatActivity {
                 settings.server.rtmpFwd.password = "";*/
 
 
-               /*
-                    default - false. Encoder will use preset to create a width X height video
-                     true.          Encoder will use preset to create a height X width video
-                */
-               // settings.advanced.verticalOrientation = true;
 
-                /* RTMP CONNECTION
-                settings.protocol.protocolId = ProtocolSettings.PROTCOL_RTMP;
+                /* RTMP CONNECTION */
+                /*settings.protocol.protocolId = ProtocolSettings.PROTCOL_RTMP;
                 settings.rtmp.streamName = RTMP_STREAM_NAME;
                 settings.rtmp.URL = RTMP_URL;
-                settings.rtmp.password = "";
-                settings.rtmp.username = "";
-                 */
+                settings.rtmp.password = null;
+                settings.rtmp.username = null;*/
+                //settings.video.encoderType = VideoSettings.VIDEO_ENCODER_H264;
+                settings.video.encoderType = VideoSettings.VIDEO_ENCODER_HEVC;
+
                 if (mSettingsToggle) {
                     settings.video.frameSizePreset = VideoSettings.ZixiFrameSizePreset1920x1080x30;
                 }    else {
