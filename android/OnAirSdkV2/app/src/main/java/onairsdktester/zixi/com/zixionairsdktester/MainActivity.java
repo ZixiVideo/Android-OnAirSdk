@@ -24,6 +24,7 @@ import com.zixi.onairsdk.ZixiConnectionStatistics;
 import com.zixi.onairsdk.ZixiOnAirSdk;
 //import com.zixi.onairsdk.ZixiRtmpStatistics;
 //import com.zixi.onairsdk.camera.ZixiCameraPreview;
+import com.zixi.onairsdk.camera.ZixiCameraCaps;
 import com.zixi.onairsdk.camera.ZixiCameraPreset;
 import com.zixi.onairsdk.events.ZixiLogEvents;
 import com.zixi.onairsdk.events.ZixiOnAirEncodedFramesEvents;
@@ -308,7 +309,13 @@ public class MainActivity extends AppCompatActivity {
                 toggleCameraPreviewRotation();
             }
         });
-        mSdk.initialize();
+
+        // mSdk.initialize();
+        
+        mSdk.initialize(ZixiCameraCaps.CAMERA_FACING_BACK,
+                ZixiOnAirPreview.PREVIEW_MODE_CROP,
+                VideoSettings.ZixiFrameSizePreset1280x720x30);
+
         mCameraSurface = (SurfaceView)findViewById(R.id.camera_surface);
         mCameraSurface.getHolder().addCallback(mSurfaceCallbacks);
         mStatusText = (TextView) findViewById(R.id.status_text);
