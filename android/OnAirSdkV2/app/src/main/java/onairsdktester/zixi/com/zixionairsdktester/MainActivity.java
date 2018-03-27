@@ -72,7 +72,7 @@ public class MainActivity extends AppCompatActivity {
 
     // Init states
     private boolean mUiCreated = false;
-    private boolean mUiGotMeasures = false;
+    private boolean mSentUiToSdk = false;
     private boolean mZixiReady = false;
 
     // Toggle between setting mode 1 and 2
@@ -245,7 +245,11 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void surfaceCreated(SurfaceHolder holder) {
             if (mZixiReady){
-                mSdk.setUiHolder(mCameraSurface.getHolder());
+                if (!mSentUiToSdk) {
+                    mSdk.setUiHolder(mCameraSurface.getHolder());
+                    mSentUiToSdk = true;
+                    Log.e(TAG,"surfaceCreated");
+                }
             } else {
                 mUiCreated = true;
             }
@@ -258,17 +262,19 @@ public class MainActivity extends AppCompatActivity {
             if (mZixiReady) {
                 Log.e(TAG,"surfaceChanged ["  + width + "x" + height + "] " + getResources().getConfiguration().orientation);
                 // ZixiOnAirSdk.getInstance().cameraViewChanged(width,height,getResources().getConfiguration().orientation);
-            } else {
-                mUiGotMeasures = true;
             }
         }
 
         @Override
         public void surfaceDestroyed(SurfaceHolder holder) {
             mUiCreated = false;
-            mUiGotMeasures = false;
+
             if (mZixiReady) {
-                mSdk.setUiHolder(null);
+                if (mSentUiToSdk ) {
+                    Log.e(TAG,"surfaceDestroyed");
+                    mSdk.setUiHolder(null);
+                    mSentUiToSdk = false;
+                }
             }
         }
     };
@@ -311,7 +317,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         // mSdk.initialize();
-        
+
         mSdk.initialize(ZixiCameraCaps.CAMERA_FACING_BACK,
                 ZixiOnAirPreview.PREVIEW_MODE_CROP,
                 VideoSettings.ZixiFrameSizePreset1280x720x30);
@@ -430,9 +436,9 @@ public class MainActivity extends AppCompatActivity {
                 settings.rtmp.URL = RTMP_URL;
                 settings.rtmp.password = null;
                 settings.rtmp.username = null;*/
-                //settings.video.encoderType = VideoSettings.VIDEO_ENCODER_H264;
-                settings.video.encoderType = VideoSettings.VIDEO_ENCODER_HEVC;
-
+                settings.video.encoderType = VideoSettings.VIDEO_ENCODER_H264;
+                //settings.video.encoderType = VideoSettings.VIDEO_ENCODER_HEVC;
+                settings.advanced.verticalOrientation = false;
                 if (mSettingsToggle) {
                     settings.video.frameSizePreset = VideoSettings.ZixiFrameSizePreset1920x1080x30;
                 }    else {
@@ -465,6 +471,13 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         Log.e("Activity","toggleOnClick - done");
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Log.e("Activity", "onDestroy");
+        mSdk.terminate();
     }
 
     public void toggleFullScreen(View view) {
