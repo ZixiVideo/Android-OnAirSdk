@@ -46,6 +46,7 @@ public class MainActivity extends AppCompatActivity {
     // Ui Properties
     private SurfaceView mCameraSurface;
     private TextView mStatusText;
+    private TextView mVersionText;
     private SeekBar mSetZoom;
 
     private boolean mCropPreviewMode = false; // Default is fit
@@ -302,6 +303,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         mSdk = new ZixiOnAirSdk(this);
+
         mSdk.setLogCallback(new ZixiLogEvents() {
             @Override
             public void logMessage(int level, String who, String what) {
@@ -325,6 +327,8 @@ public class MainActivity extends AppCompatActivity {
         mCameraSurface = (SurfaceView)findViewById(R.id.camera_surface);
         mCameraSurface.getHolder().addCallback(mSurfaceCallbacks);
         mStatusText = (TextView) findViewById(R.id.status_text);
+        mVersionText = (TextView)findViewById(R.id.version_text);
+        mVersionText.setText("Version: " + ZixiOnAirSdk.getZixiVersion());
         mSetZoom = (SeekBar)findViewById(R.id.main_set_zoom);
 
         /*((LinearLayout)findViewById(R.id.test))*/mCameraSurface.setOnTouchListener(new View.OnTouchListener() {
@@ -375,7 +379,10 @@ public class MainActivity extends AppCompatActivity {
     public void toggleCameraClicked(View view) {
         if (mSdk != null && mSdk.haveTwoCameras()) {
             Log.e(TAG,"toggleCamera");
-            mSdk.switchCamera();
+            int ret = mSdk.switchCamera();
+            if (ret != 0) {
+                Log.e(TAG,"toggleCamera -> " + ZixiError.formatToError(ret));
+            }
         }
     }
 
@@ -403,9 +410,11 @@ public class MainActivity extends AppCompatActivity {
 
     // Called from "CONNECT" button
     public void toggleOnClick(View view) {
+        Log.e(TAG,"toggleOnClick");
         if (mSdk.canConnect()) {
-
+            Log.e(TAG,"toggleOnClick - can connect");
             if (mSdk.connected()){
+                Log.e(TAG,"toggleOnClick - disconnecting");
                 mSdk.stopStreaming();
             } else {
                 ZixiSettings settings = new ZixiSettings();
@@ -467,7 +476,7 @@ public class MainActivity extends AppCompatActivity {
                 // its after all the sources have been stopped, encoders wrapped, and the file has
                 // been stored. When ZixiOnAirStatusEvents.zixiFileTransferComplete event is fired.
                 // All data has also been sent.
-
+                Log.e(TAG,"toggleOnClick - connecting");
             }
         }
         Log.e("Activity","toggleOnClick - done");
