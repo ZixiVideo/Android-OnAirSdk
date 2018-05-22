@@ -469,6 +469,10 @@ public class MainActivity extends AppCompatActivity {
 
                 mSdk.startStreamingWithSettings(settings);
 
+
+                // Rotate the camera to encoder frame
+                // mSdk.setEncoderCameraRotation(ZixiOnAirPreview.ROTATE_180_DEGREES);
+
                 // In case of store and forward, when wishing to cause the sdk to start cleaning up the
                 // file and stopping the recording call
                 // ZixiOnAirSdk.getInstance().finalizeFile();
