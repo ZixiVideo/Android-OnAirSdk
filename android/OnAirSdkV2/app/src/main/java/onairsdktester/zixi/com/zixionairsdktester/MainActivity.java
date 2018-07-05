@@ -218,7 +218,7 @@ public class MainActivity extends AppCompatActivity {
     private Thread mStartZixiThread = new Thread(new Runnable() {
         @Override
         public void run() {
-           mSdk.setLogCallback(mLogCallback);
+
             mSdk.setStatusEventsHandler(mOnAirCallbacks);
             mSdk.setEncodedFramesEventsHandler(mEncodedFramesCallbacks);
 
@@ -310,6 +310,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.println(level,"ZixiOnAirSdk", who + "::" + what);
             }
         });
+
         mSdk.setStatusEventsHandler(mOnAirCallbacks);
         findViewById(R.id.btn_rotate_cam).setOnClickListener(new View.OnClickListener() {
             @Override
