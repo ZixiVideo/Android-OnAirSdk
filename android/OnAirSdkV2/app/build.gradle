@@ -7,8 +7,8 @@ android {
         applicationId "onairsdktester.zixi.com.zixionairsdktester"
         minSdkVersion 18
         targetSdkVersion 27
-        versionCode 15
-        versionName "1.11.0.30512"
+        versionCode 16
+        versionName "1.11.0.30557"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {

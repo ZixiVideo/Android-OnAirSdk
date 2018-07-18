@@ -38,8 +38,8 @@ import com.zixi.onairsdk.settings.ZixiSettings;
 
 public class MainActivity extends AppCompatActivity {
     public static final String TAG = "ZixiOnAirSDKTester";
-    private static final String BROADCASTER_CHANNEL_NAME = "";
-    private static final String BROADCASTER_HOST_NAME = "";
+    private static final String BROADCASTER_CHANNEL_NAME = "android";
+    private static final String BROADCASTER_HOST_NAME = "10.7.0.44";
     private static final String RTMP_STREAM_NAME = "";
     private static final String RTMP_URL = "";
 
