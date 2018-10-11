@@ -93,6 +93,11 @@
                 android:text="ROTATE"
                 android:id="@+id/btn_rotate_cam"
                 />
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="SCREENSHOTS [off]"
+                android:id="@+id/btn_screenshots"/>
         </LinearLayout>
 
 

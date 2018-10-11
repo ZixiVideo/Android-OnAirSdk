@@ -9,6 +9,7 @@ import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
+import android.widget.Button;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -28,6 +29,7 @@ import com.zixi.onairsdk.camera.ZixiCameraCaps;
 import com.zixi.onairsdk.camera.ZixiCameraPreset;
 import com.zixi.onairsdk.events.ZixiLogEvents;
 import com.zixi.onairsdk.events.ZixiOnAirEncodedFramesEvents;
+import com.zixi.onairsdk.events.ZixiOnAirRawFramesEvents;
 import com.zixi.onairsdk.events.ZixiOnAirStatusEvents;
 import com.zixi.onairsdk.preview.ZixiOnAirPreview;
 import com.zixi.onairsdk.settings.FileUploadSettings;
@@ -38,8 +40,8 @@ import com.zixi.onairsdk.settings.ZixiSettings;
 
 public class MainActivity extends AppCompatActivity {
     public static final String TAG = "ZixiOnAirSDKTester";
-    private static final String BROADCASTER_CHANNEL_NAME = "android";
-    private static final String BROADCASTER_HOST_NAME = "10.7.0.44";
+    private static final String BROADCASTER_CHANNEL_NAME = "";
+    private static final String BROADCASTER_HOST_NAME = "";
     private static final String RTMP_STREAM_NAME = "";
     private static final String RTMP_URL = "";
 
@@ -48,9 +50,30 @@ public class MainActivity extends AppCompatActivity {
     private TextView mStatusText;
     private TextView mVersionText;
     private SeekBar mSetZoom;
+    private Button  mToggleScreenshots;
 
+    private boolean mEmittingScreenshots = false;
     private boolean mCropPreviewMode = false; // Default is fit
     private SingleTapConfirm mTapDetector = new SingleTapConfirm();
+    private ZixiLogEvents mLogger = new ZixiLogEvents() {
+        @Override
+        public void logMessage(int level, String who, String what) {
+            Log.println(level,"ZixiOnAirSdk", who + "::" + what);
+        }
+    };
+    private ZixiOnAirRawFramesEvents mRawFramesEventsHandler = new ZixiOnAirRawFramesEvents() {
+        @Override
+        public void onRawAudio(byte[] bytes, int i, long l) {
+
+        }
+
+        private int screenshotNr = 0;
+        @Override
+        public void onRawVideo(byte[] bytes) {
+            screenshotNr++;
+            Log.i("RawVideo","Screenshot #" + screenshotNr );
+        }
+    };
 
     public void toggleCropFit(View view) {
         if (mSdk != null) {
@@ -181,7 +204,7 @@ public class MainActivity extends AppCompatActivity {
          */
         @Override
         public void zixiOnAirReconnected() {
-
+            setStatus("zixiOnAirReconnected");
         }
 
         /**
@@ -189,7 +212,7 @@ public class MainActivity extends AppCompatActivity {
          */
         @Override
         public void zixiOnAirConnectivityLost() {
-
+            setStatus("zixiOnAirConnectivityLost");
         }
         // New events end
     };
@@ -304,12 +327,8 @@ public class MainActivity extends AppCompatActivity {
 
         mSdk = new ZixiOnAirSdk(this);
 
-        mSdk.setLogCallback(new ZixiLogEvents() {
-            @Override
-            public void logMessage(int level, String who, String what) {
-                Log.println(level,"ZixiOnAirSdk", who + "::" + what);
-            }
-        });
+        // Prevent deletion due to WeakReference
+        mSdk.setLogCallback(mLogger);
 
         mSdk.setStatusEventsHandler(mOnAirCallbacks);
         findViewById(R.id.btn_rotate_cam).setOnClickListener(new View.OnClickListener() {
@@ -319,18 +338,29 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        mToggleScreenshots = findViewById(R.id.btn_screenshots);
+        mToggleScreenshots .setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                toggleScreenshotsEmission();
+            }
+
+        });
         // mSdk.initialize();
 
         mSdk.initialize(ZixiCameraCaps.CAMERA_FACING_BACK,
                 ZixiOnAirPreview.PREVIEW_MODE_CROP,
                 VideoSettings.ZixiFrameSizePreset1280x720x30);
 
+
+        mSdk.setRawFramesEventsHandler( mRawFramesEventsHandler);
         mCameraSurface = (SurfaceView)findViewById(R.id.camera_surface);
         mCameraSurface.getHolder().addCallback(mSurfaceCallbacks);
         mStatusText = (TextView) findViewById(R.id.status_text);
         mVersionText = (TextView)findViewById(R.id.version_text);
         mVersionText.setText("Version: " + ZixiOnAirSdk.getZixiVersion());
         mSetZoom = (SeekBar)findViewById(R.id.main_set_zoom);
+
 
         /*((LinearLayout)findViewById(R.id.test))*/mCameraSurface.setOnTouchListener(new View.OnTouchListener() {
             @Override
@@ -407,6 +437,17 @@ public class MainActivity extends AppCompatActivity {
         }
 
         mSdk.setPreviewCameraRotation(mCameraRotation);
+    }
+
+    // Called from "SCREENSHOTS" button
+    private void toggleScreenshotsEmission() {
+        mEmittingScreenshots = !mEmittingScreenshots;
+        if (mEmittingScreenshots) {
+            mToggleScreenshots.setText("SCREENSHOTS [on]");
+        } else {
+            mToggleScreenshots.setText("SCREENSHOTS [off]");
+        }
+        mSdk.emitScreenshots(mEmittingScreenshots);
     }
 
     // Called from "CONNECT" button
