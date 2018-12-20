@@ -25,9 +25,11 @@ import com.zixi.onairsdk.ZixiConnectionStatistics;
 import com.zixi.onairsdk.ZixiOnAirSdk;
 //import com.zixi.onairsdk.ZixiRtmpStatistics;
 //import com.zixi.onairsdk.camera.ZixiCameraPreview;
+import com.zixi.onairsdk.camera.ZixiCamera;
 import com.zixi.onairsdk.camera.ZixiCameraCaps;
 import com.zixi.onairsdk.camera.ZixiCameraPreset;
 import com.zixi.onairsdk.events.ZixiLogEvents;
+import com.zixi.onairsdk.events.ZixiOnAirCameraEvents;
 import com.zixi.onairsdk.events.ZixiOnAirEncodedFramesEvents;
 import com.zixi.onairsdk.events.ZixiOnAirRawFramesEvents;
 import com.zixi.onairsdk.events.ZixiOnAirStatusEvents;
@@ -217,6 +219,25 @@ public class MainActivity extends AppCompatActivity {
         // New events end
     };
 
+    private ZixiOnAirCameraEvents   mOnAirCameraEvents = new ZixiOnAirCameraEvents() {
+        @Override
+        public void onManualFocusEnded(boolean succeeded ) {
+            if (succeeded)
+                Log.e(TAG,"Manual Focus -> ok ? YES" );
+            else
+                Log.e(TAG,"Manual Focus -> ok ? NO" );
+        }
+        @Override
+        public void onConnectedToCamera(ZixiCamera zixiCamera) {
+
+        }
+
+        @Override
+        public void onDisconnectedFromCamera(ZixiCamera zixiCamera) {
+
+        }
+    };
+
     // Encoded frames callbacks
     private ZixiOnAirEncodedFramesEvents mEncodedFramesCallbacks = new ZixiOnAirEncodedFramesEvents() {
         @Override
@@ -329,7 +350,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Prevent deletion due to WeakReference
         mSdk.setLogCallback(mLogger);
-
+        mSdk.setCameraEventsHandler(mOnAirCameraEvents);
         mSdk.setStatusEventsHandler(mOnAirCallbacks);
         findViewById(R.id.btn_rotate_cam).setOnClickListener(new View.OnClickListener() {
             @Override
